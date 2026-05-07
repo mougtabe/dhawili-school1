@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>ظويلي — تسجيل الدخول</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root {
+  --green-dk:  #0f2410;
+  --green-md:  #1a3a1a;
+  --green-lt:  #2d5a2d;
+  --beige:     #c8cc9a;
+  --beige-lt:  #dde0b0;
+  --beige-dk:  #a8ac7a;
+  --bg:        #0a160a;
+  --bg2:       #111d11;
+  --bg3:       #172017;
+  --border:    #1e3020;
+  --border2:   #2a4028;
+  --text:      #eef0e0;
+  --dim:       #8a9a7a;
+  --muted:     #4a5a42;
+  --grad:      linear-gradient(135deg, var(--beige-lt), var(--beige), var(--beige-dk));
+  --error:     #e05555;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'IBM Plex Sans Arabic', sans-serif;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  overflow-x: hidden;
+}
+
+.bg-layer {
+  position: fixed; inset: 0; z-index: 0;
+  background:
+    radial-gradient(ellipse 70% 60% at 30% 20%, rgba(45,90,45,0.18) 0%, transparent 60%),
+    radial-gradient(ellipse 50% 40% at 80% 80%, rgba(200,204,154,0.06) 0%, transparent 50%);
+}
+
+.bg-grid {
+  position: fixed; inset: 0; z-index: 0;
+  background-image:
+    linear-gradient(rgba(200,204,154,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(200,204,154,0.03) 1px, transparent 1px);
+  background-size: 48px 48px;
+  mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black, transparent);
+}
+
+.page {
+  position: relative; z-index: 1;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 1.2rem;
+  min-height: 100dvh;
+}
+
+.card {
+  width: 100%;
+  max-width: 420px;
+  background: rgba(17,29,17,0.85);
+  border: 1px solid var(--border2);
+  border-radius: 20px;
+  padding: 2.2rem 1.8rem;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  box-shadow: 0 24px 60px rgba(0,0,0,0.5), inset 0 1px 0 rgba(200,204,154,0.07);
+  animation: fadeUp 0.5s ease both;
+}
+
+@keyframes fadeUp {
+  from { opacity:0; transform:translateY(16px); }
+  to   { opacity:1; transform:translateY(0); }
+}
+
+.card-header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.logo-mark {
+  width: 56px; height: 56px;
+  border-radius: 16px;
+  background: var(--grad);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 1rem;
+}
+
+.logo-mark svg {
+  width: 28px; height: 28px;
+  fill: #0f2410;
+}
+
+.card-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 0.3rem;
+  background: var(--grad);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.card-subtitle {
+  font-size: 0.82rem;
+  color: var(--dim);
+  font-weight: 400;
+}
+
+.lang-row {
+  display: flex;
+  justify-content: center;
+  gap: 0.4rem;
+  margin-bottom: 1.8rem;
+}
+
+.lang-btn {
+  background: none;
+  border: 1px solid var(--border2);
+  color: var(--muted);
+  font-family: 'IBM Plex Sans Arabic', sans-serif;
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 0.28rem 0.6rem;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.lang-btn.active,
+.lang-btn:hover {
+  border-color: var(--beige-dk);
+  color: var(--beige);
+  background: rgba(200,204,154,0.07);
+}
+
+.step { display: none; }
+.step.active { display: block; }
+
+.field { margin-bottom: 1.1rem; }
+
+.flabel {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--dim);
+  margin-bottom: 0.4rem;
+  letter-spacing: 0.3px;
+}
+
+.finput {
+  width: 100%;
+  background: var(--bg3);
+  border: 1px solid var(--border2);
+  border-radius: 10px;
+  padding: 0.85rem 1rem;
+  color: var(--text);
+  font-family: 'IBM Plex Sans Arabic', sans-serif;
+  font-size: 0.95rem;
+  font-weight: 400;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  -webkit-appearance: none;
+  direction: ltr;
+  text-align: right;
+}
+
+.finput:focus {
+  border-color: var(--beige-dk);
+  box-shadow: 0 0 0 3px rgba(168,172,122,0.12);
+}
+
+.finput::placeholder { color: var(--muted); text-align: right; }
+.finput.error { border-color: var(--error); }
+
+.pin-wrap {
+  display: flex;
+  gap: 0.6rem;
+  justify-content: center;
+  margin: 0.5rem 0 1.2rem;
+}
+
+.pin-box {
+  width: 54px; height: 60px;
+  background: var(--bg3);
+  border: 1px solid var(--border2);
+  border-radius: 10px;
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--beige);
+  text-align: center;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  -webkit-appearance: none;
+  caret-color: transparent;
+}
+
+.pin-box:focus {
+  border-color: var(--beige-dk);
+  box-shadow: 0 0 0 3px rgba(168,172,122,0.12);
+}
+
+/* ── Client preview (بدل user-preview) ── */
+.client-preview {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 0.9rem 1rem;
+  margin-bottom: 1.4rem;
+}
+
+.client-avatar {
+  width: 42px; height: 42px;
+  border-radius: 10px;
+  background: var(--grad);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #0f2410;
+  flex-shrink: 0;
+}
+
+.client-info-name {
+  font-size: 0.92rem;
+  font-weight: 600;
+  margin-bottom: 0.15rem;
+}
+
+.client-info-type {
+  font-size: 0.72rem;
+  color: var(--dim);
+}
+
+/* plan badge */
+.plan-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  background: rgba(200,204,154,0.08);
+  border: 1px solid rgba(200,204,154,0.18);
+  border-radius: 6px;
+  padding: 0.18rem 0.55rem;
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: var(--beige-dk);
+  margin-top: 0.2rem;
+}
+
+.btn-primary {
+  width: 100%;
+  background: var(--grad);
+  color: #0f2410;
+  border: none;
+  border-radius: 10px;
+  padding: 0.95rem;
+  font-family: 'IBM Plex Sans Arabic', sans-serif;
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.btn-primary:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(168,172,122,0.3);
+}
+
+.btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
+
+.btn-ghost {
+  width: 100%;
+  background: none;
+  border: 1px solid var(--border2);
+  border-radius: 10px;
+  padding: 0.85rem;
+  color: var(--dim);
+  font-family: 'IBM Plex Sans Arabic', sans-serif;
+  font-size: 0.88rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-top: 0.7rem;
+}
+
+.btn-ghost:hover {
+  border-color: var(--beige-dk);
+  color: var(--beige);
+}
+
+.err-msg {
+  display: none;
+  background: rgba(224,85,85,0.1);
+  border: 1px solid rgba(224,85,85,0.25);
+  border-radius: 8px;
+  padding: 0.7rem 0.9rem;
+  font-size: 0.8rem;
+  color: var(--error);
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
+.err-msg.show { display: block; }
+
+.spinner {
+  width: 18px; height: 18px;
+  border: 2px solid rgba(15,36,16,0.3);
+  border-top-color: #0f2410;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  display: none;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.page-footer {
+  position: relative; z-index: 1;
+  text-align: center;
+  padding: 1rem;
+  font-size: 0.72rem;
+  color: var(--muted);
+}
+
+.step-dots {
+  display: flex;
+  justify-content: center;
+  gap: 0.4rem;
+  margin-bottom: 1.5rem;
+}
+
+.step-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--border2);
+  transition: all 0.3s;
+}
+
+.step-dot.active {
+  background: var(--beige);
+  width: 18px;
+  border-radius: 3px;
+}
+
+@media (max-width: 400px) {
+  .card { padding: 1.8rem 1.3rem; border-radius: 16px; }
+  .pin-box { width: 46px; height: 52px; font-size: 1.4rem; }
+}
+</style>
+</head>
+<body>
+
+<div class="bg-layer"></div>
+<div class="bg-grid"></div>
+
+<div class="page">
+  <div class="card">
+
+    <div class="card-header">
+      <div class="logo-mark">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <path d="M9 2h6l1 6H8L9 2zm-1 6l2 14h4l2-14H8zm4-4a1 1 0 100 2 1 1 0 000-2z"/>
+        </svg>
+      </div>
+      <div class="card-title" id="main-title">ظويلي</div>
+      <div class="card-subtitle" id="main-sub">منصة إدارة المدارس</div>
+    </div>
+
+    <div class="lang-row">
+      <button class="lang-btn active" data-lang="ar" onclick="setLang('ar')">ع</button>
+      <button class="lang-btn" data-lang="fr" onclick="setLang('fr')">Fr</button>
+    </div>
+
+    <div class="step-dots">
+      <div class="step-dot active" id="dot-1"></div>
+      <div class="step-dot" id="dot-2"></div>
+    </div>
+
+    <div class="err-msg" id="err-msg"></div>
+
+    <!-- ══ STEP 1: Phone ══ -->
+    <div class="step active" id="step-1">
+      <div class="field">
+        <label class="flabel" id="lbl-phone">رقم هاتف المؤسسة</label>
+        <input
+          type="tel"
+          class="finput"
+          id="inp-phone"
+          placeholder="4XXXXXXXX"
+          maxlength="12"
+          inputmode="numeric"
+          onkeydown="if(event.key==='Enter') checkPhone()"
+        >
+      </div>
+      <button class="btn-primary" id="btn-next" onclick="checkPhone()">
+        <span id="btn-next-txt">متابعة</span>
+        <div class="spinner" id="spinner-1"></div>
+      </button>
+    </div>
+
+    <!-- ══ STEP 2: Password (كل المؤسسات تستخدم كلمة مرور) ══ -->
+    <div class="step" id="step-2-pass">
+
+      <!-- Client preview -->
+      <div class="client-preview">
+        <div class="client-avatar" id="client-avatar">م</div>
+        <div style="min-width:0;flex:1">
+          <div class="client-info-name" id="client-name-display">—</div>
+          <div class="client-info-type" id="client-type-display">—</div>
+          <div class="plan-badge" id="client-plan-badge">—</div>
+        </div>
+      </div>
+
+      <div class="field">
+        <label class="flabel" id="lbl-pass">كلمة المرور</label>
+        <input
+          type="password"
+          class="finput"
+          id="inp-pass"
+          placeholder="••••••••"
+          onkeydown="if(event.key==='Enter') doLogin()"
+        >
+      </div>
+      <button class="btn-primary" id="btn-login" onclick="doLogin()">
+        <span id="btn-login-txt">دخول</span>
+        <div class="spinner" id="spinner-2"></div>
+      </button>
+      <button class="btn-ghost" onclick="goBack()" id="btn-back">← تغيير الرقم</button>
+    </div>
+
+  </div>
+</div>
+
+<div class="page-footer">
+  <span id="footer-txt">ظويلي © 2026 — جميع الحقوق محفوظة</span>
+</div>
+
+<script>
+'use strict';
+
+// ── Supabase ─────────────────────────────────────────────
+const SB_URL = 'https://ildfriqlctfzkonixtyw.supabase.co';
+const SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlsZGZyaXFsY3Rmemtvbml4dHl3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc2NjA1MjYsImV4cCI6MjA5MzIzNjUyNn0.eXOT7Rsdfzh4FJAMHGmWhh4ZzK7QKhoa-GpFBSwA2SU';
+const sb = supabase.createClient(SB_URL, SB_KEY);
+
+// ── i18n ─────────────────────────────────────────────────
+let lang = 'ar';
+
+const TYPE_LABELS = {
+  ar: { school:'مدرسة', resto:'مطعم', org:'مؤسسة', clinic:'عيادة', garage:'كراج', other:'أخرى' },
+  fr: { school:'École', resto:'Restaurant', org:'Organisation', clinic:'Clinique', garage:'Garage', other:'Autre' },
+};
+
+const PLAN_LABELS = {
+  ar: { basic:'أساسي', pro:'احترافي', enterprise:'مؤسسي' },
+  fr: { basic:'Basique', pro:'Pro', enterprise:'Entreprise' },
+};
+
+const T = {
+  ar: {
+    title:   'ظويلي',
+    sub:     'منصة إدارة المدارس',
+    phone:   'رقم هاتف المؤسسة',
+    next:    'متابعة',
+    pass:    'كلمة المرور',
+    login:   'دخول',
+    back:    '← تغيير الرقم',
+    footer:  'ظويلي © 2026 — جميع الحقوق محفوظة',
+    errors: {
+      notfound:  'الرقم غير مسجل في النظام',
+      inactive:  'هذه المؤسسة موقوفة، تواصل مع ظويلي',
+      wrongpass: 'كلمة المرور غير صحيحة',
+      empty:     'أدخل رقم الهاتف',
+      emptypass: 'أدخل كلمة المرور',
+      generic:   'حدث خطأ، حاول مرة أخرى',
+    },
+  },
+  fr: {
+    title:   'Dhawili',
+    sub:     'Plateforme de gestion scolaire',
+    phone:   'Numéro de téléphone',
+    next:    'Continuer',
+    pass:    'Mot de passe',
+    login:   'Connexion',
+    back:    '← Changer le numéro',
+    footer:  'Dhawili © 2026 — Tous droits réservés',
+    errors: {
+      notfound:  'Numéro non enregistré dans le système',
+      inactive:  'Institution suspendue, contactez Dhawili',
+      wrongpass: 'Mot de passe incorrect',
+      empty:     'Entrez votre numéro de téléphone',
+      emptypass: 'Entrez votre mot de passe',
+      generic:   'Une erreur s\'est produite, réessayez',
+    },
+  },
+};
+
+function t(key) {
+  const keys = key.split('.');
+  let v = T[lang];
+  for (const k of keys) v = v?.[k];
+  return v ?? key;
+}
+
+function setLang(l) {
+  lang = l;
+  document.documentElement.lang = l;
+  document.querySelectorAll('.lang-btn').forEach(b =>
+    b.classList.toggle('active', b.dataset.lang === l)
+  );
+  renderLang();
+}
+
+function renderLang() {
+  document.getElementById('main-title').textContent   = t('title');
+  document.getElementById('main-sub').textContent     = t('sub');
+  document.getElementById('lbl-phone').textContent    = t('phone');
+  document.getElementById('btn-next-txt').textContent = t('next');
+  document.getElementById('lbl-pass').textContent     = t('pass');
+  document.getElementById('btn-login-txt').textContent = t('login');
+  document.getElementById('btn-back').textContent     = t('back');
+  document.getElementById('footer-txt').textContent   = t('footer');
+
+  if (currentClient) {
+    document.getElementById('client-type-display').textContent =
+      TYPE_LABELS[lang][currentClient.type] || currentClient.type;
+    document.getElementById('client-plan-badge').textContent =
+      PLAN_LABELS[lang][currentClient.plan] || currentClient.plan;
+  }
+}
+
+// ── State ─────────────────────────────────────────────────
+let currentClient = null;
+let currentStep   = 1;
+
+// ── Steps ─────────────────────────────────────────────────
+function showStep(id) {
+  document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  document.getElementById('dot-1').classList.toggle('active', currentStep === 1);
+  document.getElementById('dot-2').classList.toggle('active', currentStep === 2);
+}
+
+function goBack() {
+  currentStep   = 1;
+  currentClient = null;
+  clearError();
+  document.getElementById('inp-pass').value = '';
+  showStep('step-1');
+}
+
+// ── Error ─────────────────────────────────────────────────
+function showError(msg) {
+  const el = document.getElementById('err-msg');
+  el.textContent = msg;
+  el.classList.add('show');
+}
+
+function clearError() {
+  document.getElementById('err-msg').classList.remove('show');
+  document.getElementById('inp-phone').classList.remove('error');
+  document.getElementById('inp-pass').classList.remove('error');
+}
+
+// ── Loading ────────────────────────────────────────────────
+function setLoading(btnId, spinnerId, loading) {
+  const btn = document.getElementById(btnId);
+  const sp  = document.getElementById(spinnerId);
+  btn.disabled = loading;
+  sp.style.display = loading ? 'block' : 'none';
+}
+
+// ── Step 1: البحث في جدول clients بـ contact_phone ────────
+async function checkPhone() {
+  clearError();
+  const phone = document.getElementById('inp-phone').value.trim();
+
+  if (!phone) {
+    showError(t('errors.empty'));
+    document.getElementById('inp-phone').classList.add('error');
+    return;
+  }
+
+  setLoading('btn-next', 'spinner-1', true);
+
+  try {
+    const { data, error } = await sb
+      .from('clients')
+      .select('id, name, type, plan, is_active, subdomain, contact_phone, contact_email, active_modules')
+      .eq('contact_phone', phone)
+      .single();
+
+    if (error || !data) {
+      showError(t('errors.notfound'));
+      document.getElementById('inp-phone').classList.add('error');
+      setLoading('btn-next', 'spinner-1', false);
+      return;
+    }
+
+    if (!data.is_active) {
+      showError(t('errors.inactive'));
+      setLoading('btn-next', 'spinner-1', false);
+      return;
+    }
+
+    currentClient = data;
+    currentStep   = 2;
+
+    // عرض بيانات المؤسسة
+    const initial = data.name?.charAt(0) || '؟';
+    document.getElementById('client-avatar').textContent        = initial;
+    document.getElementById('client-name-display').textContent  = data.name;
+    document.getElementById('client-type-display').textContent  = TYPE_LABELS[lang][data.type] || data.type;
+    document.getElementById('client-plan-badge').textContent    = PLAN_LABELS[lang][data.plan]  || data.plan;
+
+    showStep('step-2-pass');
+    setTimeout(() => document.getElementById('inp-pass').focus(), 100);
+
+  } catch (e) {
+    console.error(e);
+    showError(t('errors.generic'));
+  }
+
+  setLoading('btn-next', 'spinner-1', false);
+}
+
+// ── Step 2: التحقق من كلمة المرور عبر Supabase Auth ───────
+// كلمة المرور مبنية من: subdomain + '@dhawili.mr'  →  email وهمي
+async function doLogin() {
+  clearError();
+  const pass = document.getElementById('inp-pass').value;
+
+  if (!pass) {
+    showError(t('errors.emptypass'));
+    document.getElementById('inp-pass').classList.add('error');
+    return;
+  }
+
+  setLoading('btn-login', 'spinner-2', true);
+
+  try {
+    // البريد الوهمي: subdomain@dhawili.mr
+    const fakeEmail = `${currentClient.subdomain}@dhawili.mr`;
+
+    const { data, error } = await sb.auth.signInWithPassword({
+      email:    fakeEmail,
+      password: pass,
+    });
+
+    if (error) {
+      showError(t('errors.wrongpass'));
+      document.getElementById('inp-pass').classList.add('error');
+      setLoading('btn-login', 'spinner-2', false);
+      return;
+    }
+
+    // حفظ بيانات المؤسسة في sessionStorage
+    sessionStorage.setItem('dw_client', JSON.stringify(currentClient));
+    sessionStorage.setItem('dw_auth',   JSON.stringify(data.session));
+
+    // توجيه للداشبورد
+    window.location.href = 'dashboard.html';
+
+  } catch (e) {
+    console.error(e);
+    showError(t('errors.generic'));
+    setLoading('btn-login', 'spinner-2', false);
+  }
+}
+
+// ── Session check ─────────────────────────────────────────
+(function checkSession() {
+  const client = sessionStorage.getItem('dw_client');
+  if (client) {
+    try {
+      JSON.parse(client);
+      window.location.href = 'dashboard.html';
+    } catch (_) {
+      sessionStorage.clear();
+    }
+  }
+})();
+
+// ── Init ─────────────────────────────────────────────────
+renderLang();
+document.getElementById('inp-phone').focus();
+</script>
+</body>
+</html>
